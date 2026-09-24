@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: task-tracker-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: task_tracker
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USERNAME} -d task_tracker"]
+      interval: 3s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - postgres_data:/var/lib/postgresql
+  kafka-1:
+    image: apache/kafka:4.3.1
+    container_name: task-tracker-kafka-1
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: CLIENT://:9092,CONTROLLER://:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: CLIENT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka-1:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,CLIENT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: [ "CMD-SHELL","/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka-1:9092" ]
+      interval: 3s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+  backend:
+    build:
+      context: ./backend-service
+    container_name: task-tracker-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    env_file:
+      - .env.backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 3s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+  scheduler:
+    build:
+      context: ./scheduler-service
+    container_name: task-tracker-scheduler
+    restart: unless-stopped
+    env_file:
+      - .env.scheduler
+    depends_on:
+      backend:
+        condition: service_healthy
+      kafka-1:
+        condition: service_healthy
+  summarization:
+    build:
+      context: ./summarization-service
+    container_name: task-tracker-summarization
+    restart: unless-stopped
+    env_file:
+      - .env.summarization
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+  email-sender:
+    build:
+      context: ./email-sender-service
+    container_name: task-tracker-email-sender
+    restart: unless-stopped
+    env_file:
+      - .env.email-sender
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+volumes:
+  postgres_data:
+  kafka_data:

@@ -1,0 +1,12 @@
+[submodule "backend-service"]
+	path = backend-service
+	url = https://github.com/danila11042004/task-tracker-backend
+[submodule "scheduler-service"]
+	path = scheduler-service
+	url = https://github.com/danila11042004/task-tracker-scheduler
+[submodule "summarization-service"]
+	path = summarization-service
+	url = https://github.com/danila11042004/task-tracker-summarization
+[submodule "email-sender-service"]
+	path = email-sender-service
+	url = https://github.com/danila11042004/task-tracker-email-sender
