@@ -1,12 +1,12 @@
 ###Delete authorizationHeader from global variable
-POST http://localhost:8080
+POST http://153.80.246.253:8080
 
 > {%
     client.global.clear("authorizationHeader")
 %}
 
 ###Registration with json request
-POST http://localhost:8080/user
+POST http://153.80.246.253:8080/user
 Content-Type: application/json
 
 {
@@ -19,7 +19,7 @@ Content-Type: application/json
 %}
 
 ###Login with json request
-POST http://localhost:8080/auth/login
+POST http://153.80.246.253:8080/auth/login
 Content-Type: application/json
 
 {
@@ -32,7 +32,7 @@ Content-Type: application/json
 %}
 
 ###Registration with form request
-POST http://localhost:8080/user
+POST http://153.80.246.253:8080/user
 Content-Type: application/x-www-form-urlencoded
 
 email = test@mail &
@@ -43,7 +43,7 @@ password = testPassword
 %}
 
 ###Login with form request
-POST http://localhost:8080/auth/login
+POST http://153.80.246.253:8080/auth/login
 Content-Type: application/x-www-form-urlencoded
 
 email = test@mail &
@@ -54,28 +54,32 @@ password = testPassword
 %}
 
 ###Get current user
-GET http://localhost:8080/user
+GET http://153.80.246.253:8080/user
+Authorization: {{authorizationHeader}}
+
+###Get tasks current user
+GET http://153.80.246.253:8080/tasks
 Authorization: {{authorizationHeader}}
 
 ###Create new task current user
-POST http://localhost:8080/tasks
+POST http://153.80.246.253:8080/tasks
 Authorization: {{authorizationHeader}}
 Content-Type: application/json
 
 {
-  "headline": "My six task",
-  "textContent": "six text"
+  "headline": "My three task",
+  "textContent": "Three text"
 }
 
 ###Delete task current user
-DELETE http://localhost:8080/tasks/10
+DELETE http://153.80.246.253:8080/tasks/10
 Authorization: {{authorizationHeader}}
 
 ###Update task current user
-PATCH http://localhost:8080/tasks/11
+PATCH http://153.80.246.253:8080/tasks/2
 Authorization: {{authorizationHeader}}
 Content-Type: application/json
 
 {
-  "status": "COMPLETED"
+  "status": "IN_PROGRESS"
 }
