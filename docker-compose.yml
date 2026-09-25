@@ -42,8 +42,7 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
   backend:
-    build:
-      context: ./backend-service
+    image: danilatolstow/task-tracker-backend:latest
     container_name: task-tracker-backend
     ports:
       - "8080:8080"
@@ -62,8 +61,7 @@ services:
       kafka-1:
         condition: service_healthy
   scheduler:
-    build:
-      context: ./scheduler-service
+    image: danilatolstow/task-tracker-scheduler:latest
     container_name: task-tracker-scheduler
     restart: unless-stopped
     env_file:
@@ -74,8 +72,7 @@ services:
       kafka-1:
         condition: service_healthy
   summarization:
-    build:
-      context: ./summarization-service
+    image: danilatolstow/task-tracker-summarization:latest
     container_name: task-tracker-summarization
     restart: unless-stopped
     env_file:
@@ -84,8 +81,7 @@ services:
       kafka-1:
         condition: service_healthy
   email-sender:
-    build:
-      context: ./email-sender-service
+    image: danilatolstow/task-tracker-email-sender:latest
     container_name: task-tracker-email-sender
     restart: unless-stopped
     env_file:
